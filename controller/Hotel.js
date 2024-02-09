@@ -71,3 +71,34 @@ exports.createHotel = async (req, res, next) => {
     return next(new HttpError("Internal server error", 500));
   }
 };
+
+exports.getHotels = async (req, res, next) => {
+  try {
+    const hotels = await Hotel.find()
+
+    if (!hotels) {
+      return next(new HttpError("Hotels not found", 404))
+    }
+
+    res.json({ success: true, hotels })
+
+  } catch (error) {
+    return next(new HttpError(error.message, 500))
+  }
+}
+
+exports.getHotel = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const hotel = await Hotel.findById({ _id: id })
+
+    if (!hotel) {
+      return next(new HttpError("Hotel not found", 404))
+    }
+
+    res.json({ success: true, hotel })
+
+  } catch (error) {
+    return next(new HttpError(error.message, 500))
+  }
+}
