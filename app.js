@@ -4,13 +4,16 @@ const cors = require("cors");
 // const path = require("path");
 require("dotenv").config();
 // const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY);
+const cloundinary = require("cloudinary");
 const cookieparser = require("cookie-parser");
+
 
 const connection = require("./utils/database");
 const app = express();
 
 const Auth = require("./routes/AuthRoute");
 const User = require("./routes/UserRoute");
+const Hotel = require("./routes/HotelRoute");
 
 const PORT = process.env.PORT || 8080;
 
@@ -59,6 +62,7 @@ connection()
 //   }
 // );
 
+app.use(express.json({ limit: "50mb" }));
 app.use(cookieparser());
 app.use(
   cors({
@@ -79,8 +83,15 @@ app.use((req, res, next) => {
   next();
 });
 
+cloundinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_PUBLIC,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 app.use("/api/auth", Auth);
 app.use("/api/user", User);
+app.use("/api/hotel", Hotel)
 
 app.get("*", (req, res) => {
   // res.sendFile(path.resolve("build", "index.html"));
