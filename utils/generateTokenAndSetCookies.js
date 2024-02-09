@@ -14,7 +14,6 @@ const generateTokenAndSetCookie = (id, role, res) => {
 
     return token;
   } catch (err) {
-    console.log(err)
   }
 };
 

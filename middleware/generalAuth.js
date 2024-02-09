@@ -11,13 +11,11 @@ module.exports = (req, res, next) => {
       throw new Error("Authentication Failed!");
     }
     const tokenValue = jwt.verify(token, process.env.JWT_TOKEN);
-    console.log(tokenValue)
     if (tokenValue) {
       req.userData = { id: tokenValue.id };
       next();
     }
   } catch (err) {
-    console.log(err)
     return next(new HttpError("Authentication Failed!!", 401));
   }
 };

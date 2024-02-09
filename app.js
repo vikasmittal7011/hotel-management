@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 // const fs = require("fs");
-// const path = require("path");
+const path = require("path");
 require("dotenv").config();
 // const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY);
 const cloundinary = require("cloudinary");
@@ -71,10 +71,8 @@ app.use(
   })
 );
 app.use(express.json());
-// app.use(express.static(path.resolve(__dirname, "build")));
-// app.use("/api/upload", express.static(path.join("upload")));
+app.use(express.static(path.resolve(__dirname, "build")));
 app.use((req, res, next) => {
-  // res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Authorization"
@@ -94,7 +92,7 @@ app.use("/api/user", User);
 app.use("/api/hotel", Hotel)
 
 app.get("*", (req, res) => {
-  // res.sendFile(path.resolve("build", "index.html"));
+  res.sendFile(path.resolve("build", "index.html"));
 });
 
 // app.post("/api/create-payment-intent", async (req, res) => {
