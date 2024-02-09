@@ -5,7 +5,7 @@ const UserSehema = mongoose.Schema(
     name: { type: String, required: true, },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    contact: { type: Number },
+    contact: { type: Number, default: "" },
     role: { type: String, required: true, default: "user" },
   },
   { timestamps: true }
