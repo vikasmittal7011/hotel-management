@@ -73,13 +73,36 @@ exports.createHotel = async (req, res, next) => {
 
 exports.getHotels = async (req, res, next) => {
   try {
-    const hotels = await Hotel.find()
 
-    if (!hotels) {
-      return next(new HttpError("Hotels not found", 404))
+    const conditions = {}
+
+    const query = Hotel.find(conditions)
+
+    const totalHotelQuery = Hotel.find(conditions)
+
+    if (req.body.query) {
+      query = query.find({ title: { $regex: req.body.query, $options: "i" } })
+      totalHotelQuery = query.find({ title: { $regex: req.body.query, $options: "i" } })
     }
 
-    res.json({ success: true, hotels })
+    if (req.body.location) {
+      query = query.find({ city: { $regex: req.body.city, $options: "i" } })
+      totalHotelQuery = totalHotelQuery.find({ city: { $regex: req.body.city, $options: "i" } })
+    }
+
+    if (req.query_page && req.query._limit) {
+      const pageSize = req.query._limit
+      const page = req.query._page;
+      query = query.skip(pageSize * (page - 1)).limit(pageSize);
+    }
+
+    const docs = await query.exec()
+
+    const totalDocs = await totalHotelQuery.find().count().exec()
+
+    res.set("X-Total-Count", totalDocs)
+
+    res.json({ success: true, hotels: docs })
 
   } catch (error) {
     return next(new HttpError(error.message, 500))
@@ -90,6 +113,22 @@ exports.getHotel = async (req, res, next) => {
   try {
     const { id } = req.params
     const hotel = await Hotel.findById({ _id: id })
+
+    if (!hotel) {
+      return next(new HttpError("Hotel not found", 404))
+    }
+
+    res.json({ success: true, hotel })
+
+  } catch (error) {
+    return next(new HttpError(error.message, 500))
+  }
+}
+
+exports.getDeleteHotel = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const hotel = await Hotel.findByIdAndDelete({ _id: id })
 
     if (!hotel) {
       return next(new HttpError("Hotel not found", 404))
