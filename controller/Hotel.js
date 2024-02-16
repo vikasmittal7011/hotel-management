@@ -7,7 +7,7 @@ exports.createHotel = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const errorMessages = errors.array().map((error) => error.msg);
-    return next(new HttpError(errorMessages, 422));
+    return res.json({ message: errorMessages })
   }
 
   let {
@@ -58,7 +58,7 @@ exports.createHotel = async (req, res, next) => {
       const hotel = await Hotel.create(newHotel)
 
       if (!hotel) {
-        return next(new HttpError("Hotel can't be add, plase try again lagter!!"))
+        return res.json({ message: "Hotel can't be add, plase try again lagter!!" })
       }
 
       res.json({
@@ -67,7 +67,7 @@ exports.createHotel = async (req, res, next) => {
     }
 
   } catch (err) {
-    return next(new HttpError("Internal server error", 500));
+    return res.json({ message: "Internal server error" });
   }
 };
 
@@ -125,18 +125,87 @@ exports.getHotel = async (req, res, next) => {
   }
 }
 
-exports.getDeleteHotel = async (req, res, next) => {
+exports.deleteHotel = async (req, res, next) => {
   try {
     const { id } = req.params
     const hotel = await Hotel.findByIdAndDelete({ _id: id })
 
     if (!hotel) {
-      return next(new HttpError("Hotel not found", 404))
+      return res.json({ message: "Hotel not found" })
     }
 
     res.json({ success: true, hotel })
 
   } catch (error) {
-    return next(new HttpError(error.message, 500))
+    return res.json({ message: error.message })
+  }
+}
+
+exports.updateHotel = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const errorMessages = errors.array().map((error) => error.msg);
+    return next(new HttpError(errorMessages, 422));
+  }
+
+  let {
+    images,
+    title,
+    discription,
+    extraInfo,
+    price,
+    maxGuests,
+    checkIn,
+    checkOut,
+    street,
+    city,
+    state,
+    pin,
+    country,
+    perk
+  } = req.body;
+  try {
+
+    let uploadPromises = images.map(async (image) => {
+      if (!image.includes("https")) {
+        const cloudinaryResponse = await cloudinary.uploader.upload(image);
+        return cloudinaryResponse.secure_url;
+      } else {
+        return image
+      }
+    });
+
+    const uploadedImages = await Promise.all(uploadPromises);
+
+    const updatedHotel = {
+      title,
+      discription,
+      extraInfo,
+      price: +price,
+      maxGuests: +maxGuests,
+      checkIn,
+      checkOut,
+      street,
+      city,
+      state,
+      pin: +pin,
+      country,
+      photos: uploadedImages,
+      perks: perk
+    };
+
+
+    const hotel = await Hotel.findByIdAndUpdate({ _id: req.body.id }, updatedHotel, { new: true })
+
+    if (!hotel) {
+      return res.json({ message: "Hotel can't be add, plase try again lagter!!" })
+    }
+
+    res.json({
+      success: true, hotel
+    })
+
+  } catch (error) {
+    res.json({ message: "Internal Server Error" })
   }
 }
