@@ -14,6 +14,7 @@ const app = express();
 const Auth = require("./routes/AuthRoute");
 const User = require("./routes/UserRoute");
 const Hotel = require("./routes/HotelRoute");
+const HotelBookRoute = require("./routes/HotelBookRoute");
 
 const PORT = process.env.PORT || 8080;
 
@@ -91,7 +92,8 @@ cloundinary.config({
 
 app.use("/api/auth", Auth);
 app.use("/api/user", User);
-app.use("/api/hotel", Hotel)
+app.use("/api/hotel", Hotel);
+app.use("/api/booking", HotelBookRoute);
 
 app.get("*", (req, res) => {
   res.sendFile(path.resolve("build", "index.html"));

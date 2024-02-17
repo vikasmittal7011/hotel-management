@@ -2,14 +2,9 @@ const { validationResult } = require("express-validator");
 const { HotelBook } = require("../models/HotelBook");
 
 exports.createHotelBook = async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    const errorMessages = errors.array().map((error) => error.msg);
-    return next(new HttpError(errorMessages, 422));
-  }
 
   let {
-    contact, checkIn, checkOut, guest, hotel
+    contact, checkIn, checkOut, guest, hotel, totalAmount, paymentMethod
   } = req.body;
 
   const id = req.userData.id
@@ -19,16 +14,18 @@ exports.createHotelBook = async (req, res, next) => {
       contact,
       checkInDate: checkIn,
       checkOutDate: checkOut,
-      numberOfGuest: +numberOfGuest,
+      numberOfGuest: +guest,
       hotel,
-      user: id
+      user: id,
+      price: +totalAmount,
+      paymentMethod
     };
 
 
     const booking = await HotelBook.create(newHotel)
 
     if (!booking) {
-      return next(new HttpError("Booking can't be done, plase try again lagter!!"))
+      return res.json({ message: "Booking can't be done, plase try again lagter!!" })
     }
 
     res.json({
@@ -37,14 +34,15 @@ exports.createHotelBook = async (req, res, next) => {
 
 
   } catch (err) {
-    return next(new HttpError("Internal server error", 500));
+    console.log(err.message)
+    return res.json({ message: "Internal server error" })
   }
 };
 
 exports.getBooks = async (req, res, next) => {
   try {
 
-    const booking = await HotelBook.find()
+    const booking = await HotelBook.find().sort({ createdAt: -1 }).populate("hotel user")
 
     res.json({ success: true, booking })
 
@@ -56,15 +54,11 @@ exports.getBooks = async (req, res, next) => {
 exports.getHotelBookByUser = async (req, res, next) => {
   try {
     const { id } = req.userData
-    const book = await HotelBook.findById({ user: id })
+    const book = await HotelBook.find({ user: id }).sort({ createdAt: -1 }).populate("hotel user")
 
-    if (!book) {
-      return next(new HttpError("Hotel not found", 404))
-    }
-
-    res.json({ success: true, book })
+    res.json({ success: true, booking: book })
 
   } catch (error) {
-    return next(new HttpError(error.message, 500))
+    return res.json({ message: "Internal Server Error" })
   }
 }

@@ -6,9 +6,11 @@ const HotelBookSechema = mongoose.Schema(
         checkInDate: { type: String, required: true, },
         checkOutDate: { type: String, required: true, },
         numberOfGuest: { type: Number, required: true, },
-        contact: { type: String, required: true, },
-        hotel: { type: ObjectId, required: true, },
-        user: { type: ObjectId, required: true, },
+        contact: { type: Number, required: true, },
+        price: { type: Number, required: true, },
+        hotel: { type: ObjectId, required: true, ref: "Hotel", },
+        user: { type: ObjectId, required: true, ref: "User", },
+        paymentMethod: { type: String, required: true }
     },
     { timestamps: true }
 );
@@ -25,4 +27,4 @@ HotelBookSechema.set("toJSON", {
     },
 });
 
-exports.HotelBook = mongoose.model("Hotel", HotelBookSechema);
+exports.HotelBook = mongoose.model("Booking", HotelBookSechema);
