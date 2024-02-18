@@ -73,41 +73,58 @@ exports.createHotel = async (req, res, next) => {
 
 exports.getHotels = async (req, res, next) => {
   try {
+    const conditions = {};
+    let query = Hotel.find(conditions);
+    let totalHotelQuery = Hotel.find(conditions);
 
-    const conditions = {}
-
-    const query = Hotel.find(conditions)
-
-    const totalHotelQuery = Hotel.find(conditions)
-
-    if (req.body.query) {
-      query = query.find({ title: { $regex: req.body.query, $options: "i" } })
-      totalHotelQuery = query.find({ title: { $regex: req.body.query, $options: "i" } })
+    if (req.query.title) {
+      query = query.find({ title: { $regex: req.query.title, $options: "i" } });
+      totalHotelQuery = Hotel.find({ title: { $regex: req.query.title, $options: "i" } });
     }
 
-    if (req.body.location) {
-      query = query.find({ city: { $regex: req.body.city, $options: "i" } })
-      totalHotelQuery = totalHotelQuery.find({ city: { $regex: req.body.city, $options: "i" } })
+    if (req.query.location) {
+      const locationRegex = new RegExp(req.query.location, 'i');
+      query = query.find({
+        $or: [
+          { street: { $regex: locationRegex } },
+          { city: { $regex: locationRegex } },
+          { state: { $regex: locationRegex } },
+          { country: { $regex: locationRegex } }
+        ]
+      });
+      totalHotelQuery = Hotel.find({
+        $or: [
+          { street: { $regex: locationRegex } },
+          { city: { $regex: locationRegex } },
+          { state: { $regex: locationRegex } },
+          { country: { $regex: locationRegex } }
+        ]
+      });
     }
 
-    if (req.query_page && req.query._limit) {
-      const pageSize = req.query._limit
-      const page = req.query._page;
+    if (req.query._sort && req.query._order) {
+      query = query.sort({ [req.query._sort]: req.query._order });
+    }
+
+    if (req.query._page && req.query._limit) {
+      const pageSize = parseInt(req.query._limit);
+      const page = parseInt(req.query._page);
       query = query.skip(pageSize * (page - 1)).limit(pageSize);
     }
 
-    const docs = await query.exec()
+    const [docs, totalDocs] = await Promise.all([
+      query.exec(),
+      totalHotelQuery.countDocuments()
+    ]);
 
-    const totalDocs = await totalHotelQuery.find().count().exec()
-
-    res.set("X-Total-Count", totalDocs)
-
-    res.json({ success: true, hotels: docs })
+    res.set("X-Total-Count", totalDocs);
+    res.json({ success: true, hotels: docs });
 
   } catch (error) {
-    return next(new HttpError(error.message, 500))
+    return next(new HttpError(error.message, 500));
   }
-}
+};
+
 
 exports.getHotel = async (req, res, next) => {
   try {

@@ -34,7 +34,6 @@ exports.createHotelBook = async (req, res, next) => {
 
 
   } catch (err) {
-    console.log(err.message)
     return res.json({ message: "Internal server error" })
   }
 };
