@@ -125,7 +125,6 @@ exports.getHotels = async (req, res, next) => {
   }
 };
 
-
 exports.getHotel = async (req, res, next) => {
   try {
     const { id } = req.params

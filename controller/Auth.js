@@ -115,7 +115,7 @@ exports.resetPasswordRequest = async (req, res, next) => {
       return next(new HttpError("User is not exist, check your email", 404));
     }
 
-    const token = jwt.sign({ email: email }, jwt_key);
+    const token = jwt.sign({ email: email }, jwt_key, { expiresIn: "5m" });
 
     user.passwordResetToken = token;
 
@@ -125,7 +125,7 @@ exports.resetPasswordRequest = async (req, res, next) => {
       from: "myshop@gmail.com",
       to: email,
       subject: "Reset Your Password!!",
-      html: `<p>Click <a href="https://myshop-fx41.onrender.com/reset-password?token=${token}">here</a> to reset your password!!</p>`,
+      html: `<p>Click <a href="https://hotelmanagement-sq75.onrender.com/reset-password?token=${token}">here</a> to reset your password!!</p>`,
     });
 
     if (info) {
@@ -141,11 +141,11 @@ exports.resetPasswordRequest = async (req, res, next) => {
 };
 
 exports.resetPassword = async (req, res, next) => {
-  const { token, password } = req.body;
-  const tokenValue = jwt.verify(token, process.env.JWT_TOKEN);
-  const { email } = tokenValue;
-  let user;
   try {
+    const { token, password } = req.body;
+    const tokenValue = jwt.verify(token, process.env.JWT_TOKEN);
+    const { email } = tokenValue;
+    let user;
     user = await User.findOne({ email: email });
     if (token !== user.passwordResetToken) {
       return next(new HttpError("Bad Request, failed to reset password", 422));
@@ -159,6 +159,6 @@ exports.resetPassword = async (req, res, next) => {
       });
     });
   } catch (err) {
-    return next(new HttpError("Internal server error", 500));
+    return next(new HttpError(err.message + ". Plase resend request.", 500));
   }
 };
