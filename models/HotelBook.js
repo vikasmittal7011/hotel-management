@@ -10,7 +10,8 @@ const HotelBookSechema = mongoose.Schema(
         price: { type: Number, required: true, },
         hotel: { type: ObjectId, required: true, ref: "Hotel", },
         user: { type: ObjectId, required: true, ref: "User", },
-        paymentMethod: { type: String, required: true }
+        paymentMethod: { type: String, required: true },
+        paymentDone: { type: Boolean, default: false }
     },
     { timestamps: true }
 );

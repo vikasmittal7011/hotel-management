@@ -1,9 +1,7 @@
 const express = require("express");
 const cors = require("cors");
-// const fs = require("fs");
 const path = require("path");
 require("dotenv").config();
-// const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY);
 const cloundinary = require("cloudinary");
 const cookieparser = require("cookie-parser");
 
@@ -26,44 +24,8 @@ connection()
     console.log(err);
   });
 
-// app.post(
-//   "/api/webhook",
-//   express.raw({ type: "application/json" }),
-//   async (request, response) => {
-//     const sig = request.headers["stripe-signature"];
-
-//     let event;
-
-//     try {
-//       event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
-//     } catch (err) {
-//       response.status(400).send(`Webhook Error: ${err.message}`);
-//       return;
-//     }
-
-//     // Handle the event
-//     switch (event.type) {
-//       case "payment_intent.succeeded":
-//         const paymentIntentSucceeded = event.data.object;
-//         const id = paymentIntentSucceeded.metadata.orderId;
-
-//         const order = await OrderModal.findById({ _id: id });
-//         order.paymentStatus = "Receive";
-//         await order.save();
-
-//         // Then define and call a function to handle the event payment_intent.succeeded
-//         break;
-//       // ... handle other event types
-//       default:
-//         console.log(`Unhandled event type ${event.type}`);
-//     }
-
-//     // Return a 200 response to acknowledge receipt of the event
-//     response.send();
-//   }
-// );
-
 app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieparser());
 app.use(
   cors({
@@ -98,28 +60,6 @@ app.use("/api/booking", HotelBookRoute);
 app.get("*", (req, res) => {
   res.sendFile(path.resolve("build", "index.html"));
 });
-
-// app.post("/api/create-payment-intent", async (req, res) => {
-//   const { items, orderId } = req.body;
-
-//   try {
-//     const paymentIntent = await stripe.paymentIntents.create({
-//       amount: items * 100,
-//       currency: "inr",
-//       automatic_payment_methods: {
-//         enabled: true,
-//       },
-//       metadata: { orderId },
-//     });
-//     res.send({
-//       clientSecret: paymentIntent.client_secret,
-//     });
-//   } catch (err) {
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// });
-
-// const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
 
 app.use((req, res, next) => {
   next(new HttpError("Not route found", 404));
